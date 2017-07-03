@@ -1,0 +1,99 @@
+<html>
+<head>
+</head>
+
+<body>
+<!--form action="" method="post" enctype="multipart/form-data"-->
+  <input type="file" name="image" accept="image/*" capture="user">
+  <input type="submit" value="Upload">
+<!--/form-->
+<div id="imgur-url"> </div>
+
+<canvas></canvas>
+<script>
+
+var input = document.querySelector('input[type=file]'); // see Example 4
+
+input.onchange = function () {
+  var file = input.files[0];
+
+  uploadImgur(file);
+  drawOnCanvas(file);   // see Example 6
+  //displayAsImage(file); // see Example 7
+};
+
+function upload(file) {
+  var form = new FormData(),
+      xhr = new XMLHttpRequest();
+
+  form.append('image', file);
+  xhr.open('post', 'upload', true);
+  xhr.send(form);
+}
+
+function drawOnCanvas(file) {
+  var reader = new FileReader();
+
+  reader.onload = function (e) {
+    var dataURL = e.target.result,
+        c = document.querySelector('canvas'), // see Example 4
+        ctx = c.getContext('2d'),
+        img = new Image();
+
+    img.onload = function() {
+      c.width = img.width;
+      c.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    };
+
+    img.src = dataURL;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+
+function uploadImgur(file) {
+
+    /* Is the file an image? */
+    if (!file || !file.type.match(/image.*/)) return;
+
+    /* It is! */
+    document.body.className = "uploading";
+
+    /* Lets build a FormData object*/
+    var fd = new FormData(); 
+    fd.append("image", file); // Append the file
+    var xhr = new XMLHttpRequest(); 
+    xhr.open("POST", "https://api.imgur.com/3/image.json"); // Boooom!
+    xhr.onload = function() {
+    // on success
+        var data = JSON.parse(xhr.responseText).data
+        var link = data.link;
+        console.log('upload successful')
+        console.log(data);
+        document.querySelector("#imgur-url").href = link;
+        document.querySelector("#imgur-url").innerHTML = link;
+        document.body.className = "uploaded";
+    }
+    // Ok, I don't handle the errors. An exercice for the reader.
+    xhr.setRequestHeader('Authorization', 'Client-ID bae399be44e53ae');
+    /* And now, we send the formdata */
+    xhr.send(fd);
+}
+
+function displayAsImage(file) {
+  var imgURL = URL.createObjectURL(file),
+      img = document.createElement('img');
+
+  img.onload = function() {
+    URL.revokeObjectURL(imgURL);
+  };
+
+  img.src = imgURL;
+  document.body.appendChild(img);
+}
+
+</script>
+</body>
+</html>
