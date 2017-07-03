@@ -1,15 +1,39 @@
 <html>
 <head>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+          integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+          crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  
+  <!-- Bootstrap theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+  <!--link rel="stylesheet" href="static/main.css" type="text/css" media="all"-->
+  <style> 
+    #photo { 
+       max-width: 480px
+    }
+  </style>
 </head>
 
 <body>
-<!--form action="" method="post" enctype="multipart/form-data"-->
-  <input type="file" name="image" accept="image/*" capture="user">
-  <input type="submit" value="Upload">
-<!--/form-->
+<div class="row">
+  <div class="col-md-1">
+    <div class="form-group">
+      <label for="imgInput">Take/Select a picture</label>
+      <input type="file" class="form-control" name="image" id="imgInput" accept="image/*" capture="user">
+      <p class="help-block">Make sure there's a car in the picture .. duh.</p>
+    </div>
+      <!-- input type="submit" class="btn btn-primary" value="Upload" -->
+  </div>
+</div>
 <div id="imgur-url"> </div>
-
-<canvas></canvas>
+<div id="plateNumber"> </div>
+<canvas id="photo"></canvas>
 <script>
 
 var input = document.querySelector('input[type=file]'); // see Example 4
@@ -75,7 +99,7 @@ function uploadImgur(file) {
         document.querySelector("#imgur-url").href = link;
         document.querySelector("#imgur-url").innerHTML = link;
         document.body.className = "uploaded";
-        analyzeImage(link);        
+        analyzeImage(link);
     }
     // Ok, I don't handle the errors. An exercice for the reader.
     xhr.setRequestHeader('Authorization', 'Client-ID bae399be44e53ae');
@@ -83,24 +107,26 @@ function uploadImgur(file) {
     xhr.send(fd);
 }
 
+
 function analyzeImage(url) {
-    console.log('Start analyze of '+url);
-    var url = 'https://api.openalpr.com/v2/recognize_url'
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", url);
-    xhr.onload = function() {
-        var data = JSON.parse(xhr.responseText).data
-        console.log('Open APR result ready')
-        console.log(data)
-    }
-    //xhr.setRequestHeader('Authorization', )
-    var formData = new FormData();
-    formData.append('image_url', url);
-    formData.append('secret_key', 'sk_d9f61fcd9db91602e13e76ae');
-    formData.append('country', 'eu');
-    console.log('Analyze the following');
-    console.log(formData);
-    xhr.send(formData);
+  console.log('start analysis');
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://api.openalpr.com/v2/recognize_url");
+  xhr.onload = function() {
+  // on success
+     var data = JSON.parse(xhr.responseText);
+     console.log('analysis complete');
+     console.log(data);
+     if (data.results) {
+       var result = data.results[0].plate;
+       document.querySelector("#plateNumber").innerHTML = '<h1>' + result +'</h1>';
+     }
+  }
+  var fd = new FormData();
+  fd.append('image_url', url);
+  fd.append('secret_key', 'sk_d9f61fcd9db91602e13e76ae');
+  fd.append('country', 'eu');
+  xhr.send(fd);
 }
 
 function displayAsImage(file) {
