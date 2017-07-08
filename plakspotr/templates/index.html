@@ -12,7 +12,7 @@
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-  <!--link rel="stylesheet" href="static/main.css" type="text/css" media="all"-->
+  <link rel="stylesheet" href="static/main.css" type="text/css" media="all">
   <style> 
     #photo { 
        max-width: 480px
@@ -21,29 +21,83 @@
 </head>
 
 <body>
-<div class="row">
-  <div class="col-md-1">
-    <div class="form-group">
-      <label for="imgInput">Take/Select a picture</label>
-      <input type="file" class="form-control" name="image" id="imgInput" accept="image/*" capture="user">
-      <p class="help-block">Make sure there's a car in the picture .. duh.</p>
-    </div>
-      <!-- input type="submit" class="btn btn-primary" value="Upload" -->
-  </div>
-</div>
-<div id="imgur-url"> </div>
-<div id="plateNumber"> </div>
-<canvas id="photo"></canvas>
-<script>
+
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills float-right">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Contact</a>
+            </li>
+          </ul>
+        </nav>
+        <h3 class="text-muted">Plakspot</h3>
+      </div>
+
+      <div class="jumbotron">
+        <h1 class="display-4">Spot a plak</h1>
+        <p class="lead">Car spotter pro edition.</p>
+        <p>
+          <label class="btn btn-lg btn-success btn-file" href="#" role="button">Snap Plak
+            <input type="file" class="form-control" name="image" id="imgInput" accept="image/*" capture="user">  
+          </label>
+        </p>
+        <p class="help-block">Make sure there's a car in the picture .. duh.</p>
+        </div>
+      </div>
+
+      <div class="row marketing">
+        <div class="col-lg-6">
+          <h4>Subheading</h4>
+          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+          <h4>Subheading</h4>
+          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+          <h4>Subheading</h4>
+          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        </div>
+
+        <div class="col-lg-6">
+          <h4>Subheading</h4>
+          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+          <h4>Subheading</h4>
+          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+          <h4>Subheading</h4>
+          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+        </div>
+      </div>
+
+      <div>
+        <div id="imgur-url"> </div>
+        <div id="plateNumber"> </div>
+        <canvas id="photo"></canvas>
+      </div>
+
+      <footer class="footer">
+        <p>© Company 2017</p>
+      </footer>
+
+    </div> <!-- /container -->
+  
+    <script>
 
 var input = document.querySelector('input[type=file]'); // see Example 4
 
 input.onchange = function () {
   var file = input.files[0];
 
-  uploadImgur(file);
   drawOnCanvas(file);   // see Example 6
   //displayAsImage(file); // see Example 7
+  //uploadImgur(file);    // and analyze..
 };
 
 function upload(file) {
@@ -62,12 +116,29 @@ function drawOnCanvas(file) {
     var dataURL = e.target.result,
         c = document.querySelector('canvas'), // see Example 4
         ctx = c.getContext('2d'),
-        img = new Image();
-
+        img = new Image(),
+        MAX_WIDTH = 1280,
+        MAX_HEIGHT = 1280;
+         
     img.onload = function() {
-      c.width = img.width;
-      c.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      var width = img.width,
+          height = img.height;
+      // scale down
+      if (width > height){
+        if (width > MAX_WIDTH)
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+      c.width = width;
+      c.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+      var smallDataUrl = c.toDataURL("image/jpeg", 0.90);
+      uploadImgur(smallDataUrl);
     };
 
     img.src = dataURL;
@@ -80,7 +151,13 @@ function drawOnCanvas(file) {
 function uploadImgur(file) {
 
     /* Is the file an image? */
-    if (!file || !file.type.match(/image.*/)) return;
+    if (!file) return
+    if (file instanceof File && !file.type.match(/image.*/)) return;
+    else {
+       file = file.substring(23);
+    }
+    console.log('file type is '+typeof(file));
+
 
     /* It is! */
     document.body.className = "uploading";
@@ -141,6 +218,6 @@ function displayAsImage(file) {
   document.body.appendChild(img);
 }
 
-</script>
+    </script>
 </body>
 </html>
