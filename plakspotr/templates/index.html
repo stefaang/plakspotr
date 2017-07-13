@@ -1,223 +1,93 @@
 <html>
 <head>
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-          integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
-          crossorigin="anonymous"></script>
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  
-  <!-- Bootstrap theme -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-  <link rel="stylesheet" href="static/main.css" type="text/css" media="all">
-  <style> 
-    #photo { 
-       max-width: 480px
-    }
-  </style>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/main.css') }}" type="text/css" media="all">
+    <style>
+        #photo {
+            max-width: 480px
+        }
+    </style>
 </head>
 
 <body>
 
-    <div class="container">
-      <div class="header clearfix">
+<div class="container">
+    <div class="header clearfix">
         <nav>
-          <ul class="nav nav-pills float-right">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Contact</a>
-            </li>
-          </ul>
+            <ul class="nav nav-pills float-right">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
         </nav>
-        <h3 class="text-muted">Plakspot</h3>
-      </div>
+        <h3 class="text-muted">Welcome {{ user.name }} </h3>
+    </div>
 
-      <div class="jumbotron">
+    <div class="jumbotron">
         <h1 class="display-4">Spot a plak</h1>
         <p class="lead">Car spotter pro edition.</p>
         <p>
-          <label class="btn btn-lg btn-success btn-file" href="#" role="button">Snap Plak
-            <input type="file" class="form-control" name="image" id="imgInput" accept="image/*" capture="user">  
-          </label>
+            <label class="btn-file btn btn-lg btn-success" href="#" role="button">Snap Plak
+                <input type="file" class="form-control" name="image" id="imgInput" accept="image/*" capture="user">
+            </label>
         </p>
         <p class="help-block">Make sure there's a car in the picture .. duh.</p>
-        </div>
-      </div>
 
-      <div class="row marketing">
-        <div class="col-lg-6">
-          <h4>Subheading</h4>
-          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+        <label class="btn" id="imgur-url"></label>
+        <label class="btn" id="plateNumber"></label>
 
-          <h4>Subheading</h4>
-          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
-
-          <h4>Subheading</h4>
-          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
-        </div>
-
-        <div class="col-lg-6">
-          <h4>Subheading</h4>
-          <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
-
-          <h4>Subheading</h4>
-          <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
-
-          <h4>Subheading</h4>
-          <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
-        </div>
-      </div>
-
-      <div>
-        <div id="imgur-url"> </div>
-        <div id="plateNumber"> </div>
         <canvas id="photo"></canvas>
-      </div>
 
-      <footer class="footer">
-        <p>© Company 2017</p>
-      </footer>
+    </div>
 
-    </div> <!-- /container -->
-  
-    <script>
+    <div class="row marketing">
+        <div class="col-lg-6">
+            <h4>Subheading</h4>
+            <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
 
-var input = document.querySelector('input[type=file]'); // see Example 4
+            <h4>Subheading</h4>
+            <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet
+                fermentum.</p>
+        </div>
 
-input.onchange = function () {
-  var file = input.files[0];
+        <div class="col-lg-6">
+            <h4>Subheading</h4>
+            <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
 
-  drawOnCanvas(file);   // see Example 6
-  //displayAsImage(file); // see Example 7
-  //uploadImgur(file);    // and analyze..
-};
+            <h4>Subheading</h4>
+            <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet
+                fermentum.</p>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© Stefaan Ghysels 2017</p>
+    </footer>
+</div> <!-- /container -->
 
-function upload(file) {
-  var form = new FormData(),
-      xhr = new XMLHttpRequest();
+<!-- Get jquery -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+        crossorigin="anonymous"></script>
 
-  form.append('image', file);
-  xhr.open('post', 'upload', true);
-  xhr.send(form);
-}
+<!-- minified Bootstrap -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
 
-function drawOnCanvas(file) {
-  var reader = new FileReader();
+<script src="{{ url_for('static',filename='js/main.js') }}"></script>
 
-  reader.onload = function (e) {
-    var dataURL = e.target.result,
-        c = document.querySelector('canvas'), // see Example 4
-        ctx = c.getContext('2d'),
-        img = new Image(),
-        MAX_WIDTH = 1280,
-        MAX_HEIGHT = 1280;
-         
-    img.onload = function() {
-      var width = img.width,
-          height = img.height;
-      // scale down
-      if (width > height){
-        if (width > MAX_WIDTH)
-          height *= MAX_WIDTH / width;
-          width = MAX_WIDTH;
-      } else {
-        if (height > MAX_HEIGHT) {
-          width *= MAX_HEIGHT / height;
-          height = MAX_HEIGHT;
-        }
-      }
-      c.width = width;
-      c.height = height;
-      ctx.drawImage(img, 0, 0, width, height);
-      var smallDataUrl = c.toDataURL("image/jpeg", 0.90);
-      uploadImgur(smallDataUrl);
-    };
-
-    img.src = dataURL;
-  };
-
-  reader.readAsDataURL(file);
-}
-
-
-function uploadImgur(file) {
-
-    /* Is the file an image? */
-    if (!file) return
-    if (file instanceof File && !file.type.match(/image.*/)) return;
-    else {
-       file = file.substring(23);
-    }
-    console.log('file type is '+typeof(file));
-
-
-    /* It is! */
-    document.body.className = "uploading";
-
-    /* Lets build a FormData object*/
-    var fd = new FormData(); 
-    fd.append("image", file); // Append the file
-    var xhr = new XMLHttpRequest(); 
-    xhr.open("POST", "https://api.imgur.com/3/image.json"); // Boooom!
-    xhr.onload = function() {
-    // on success
-        var data = JSON.parse(xhr.responseText).data
-        var link = data.link;
-        console.log('upload successful')
-        console.log(data);
-        document.querySelector("#imgur-url").href = link;
-        document.querySelector("#imgur-url").innerHTML = link;
-        document.body.className = "uploaded";
-        analyzeImage(link);
-    }
-    // Ok, I don't handle the errors. An exercice for the reader.
-    xhr.setRequestHeader('Authorization', 'Client-ID bae399be44e53ae');
-    /* And now, we send the formdata */
-    xhr.send(fd);
-}
-
-
-function analyzeImage(url) {
-  console.log('start analysis');
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "https://api.openalpr.com/v2/recognize_url");
-  xhr.onload = function() {
-  // on success
-     var data = JSON.parse(xhr.responseText);
-     console.log('analysis complete');
-     console.log(data);
-     if (data.results) {
-       var result = data.results[0].plate;
-       document.querySelector("#plateNumber").innerHTML = '<h1>' + result +'</h1>';
-     }
-  }
-  var fd = new FormData();
-  fd.append('image_url', url);
-  fd.append('secret_key', 'sk_d9f61fcd9db91602e13e76ae');
-  fd.append('country', 'eu');
-  xhr.send(fd);
-}
-
-function displayAsImage(file) {
-  var imgURL = URL.createObjectURL(file),
-      img = document.createElement('img');
-
-  img.onload = function() {
-    URL.revokeObjectURL(imgURL);
-  };
-
-  img.src = imgURL;
-  document.body.appendChild(img);
-}
-
-    </script>
 </body>
 </html>
