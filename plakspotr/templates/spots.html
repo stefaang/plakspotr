@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block head %}
+{% endblock %}
+
+{% block body %}
+{% if spots %}
+{% for spot in spots %}
+    <h1 class="display-4">{{ spot.plate }}</h1>
+    {% if spot.make %}
+        <p class="lead">{{ spot.color }} {{ spot.make }} - {{ spot.model }}</p>
+    {% endif %}
+    <p class="lead">{{ spot.username }} on {{ spot.date_created }}</p>
+    <p><img src="{{ spot.url }}" width="480px"/></p>
+{% endfor %}
+{% else %}
+    <h1 class="display-4">No spots found for this tag...</h1>
+{% endif %}
+{% endblock %}
+
+{% block js_imports %}
+{% endblock %}

@@ -1,7 +1,11 @@
 import logging
 import sys
+import json
 from datetime import datetime as dt
 from flask_login import UserMixin
+
+from constants import *
+
 
 logger = logging.getLogger('root')
 
@@ -37,39 +41,68 @@ class User(db.Document, UserMixin):
         self.save()
 
 
-    is_authenticated = db.BooleanField()
-        # """
-        # This property should return True if the user is authenticated, i.e. they have provided valid credentials.
-        #  (Only authenticated users will fulfill the criteria of login_required.)
-        # """
-
-    def is_active(self):
-        """
-        This property should return True if this is an active user - in addition to being authenticated,
-        they also have activated their account, not been suspended, or any condition your application has for rejecting
-        an account. Inactive accounts may not log in (without being forced of course).
-        """
-
-    @property
-    def is_anonymous(self):
-        """
-        This property should return True if this is an anonymous user. (Actual users should return False instead.)
-
-        :return: boolean
-        """
-        return True
-
-    def get_id(self):
-        """
-        This method must return a unicode that uniquely identifies this user, and can be used to load the user from the
-        user_loader callback. Note that this must be a unicode - if the ID is natively an int or some other type,
-        you will need to convert it to unicode.
-        """
-        return unicode(self.id)
-
-
 class Spot(db.Document):
     date_created = db.DateTimeField(default=dt.now)
     url = db.StringField()
     data = db.StringField()
     user = db.ReferenceField(User)
+    plate = db.StringField()
+    make = db.StringField()
+    model = db.StringField()
+    prizes = db.ListField()
+    score = db.IntField(default=0)
+
+    def get_info(self):
+        d = json.loads(self.to_json())
+        d['username'] = self.user.name
+        d['date_created'] = self.date_created.strftime("%Y-%m-%d %H:%M:%S")
+        logger.info('convert to mongo: %s', d)
+        return d
+
+    def load_details(self):
+        try:
+            data = json.loads(self.data)
+        except ValueError:
+            logger.warn('failed to load json data')
+            return False
+        results = data.get('results')
+        if not results:
+            logger.info('no results in data')
+            return False
+        result = results[0]
+        self.plate = result.get('plate')
+        vehicle = result.get('vehicle')
+        if vehicle:
+            self.make = vehicle.get('make')[0]['name']
+            self.model = vehicle.get('make_model')[0]['name']
+            self.color = vehicle.get('color')[0]['name']
+        return True
+
+    def get_score_v1(self):
+        """ a new spot gets a list of prices, used to determine the score """
+        prizes = ['BASE']
+
+        # get other spots of this plate
+        same_spots = Spot.objects(plate=self.plate)
+        if same_spots:
+            # check how many time we show up in the result
+            my_same_spots = same_spots.filter(user=self.user)
+            if my_same_spots:
+                # this ain't the first time...
+                # check cooldown to prevent boring cheaters
+                prev_spot = my_same_spots[0]
+                if self.date_created - prev_spot.date_created < COOLDOWN_PERIOD:
+                    prizes = ['YOU_ARE_BORING']
+                    return prizes
+                if len(my_same_spots) == 1:
+                    prizes += ['MY_SECOND_TIME']
+                elif len(my_same_spots) == 2:
+                    prizes += ['MY_THIRD_TIME']
+            else:
+                prizes.append('MY_FIRST_TIME')
+        else:
+            prizes.append('FIRST_TIME_EVER')
+
+        my_spots = Spot.objects(user=self.user)
+
+        return prizes

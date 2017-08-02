@@ -1,71 +1,51 @@
-var input = document.querySelector('input[type=file]'); // see Example 4
+var input = document.getElementById('img-input'); // see Example 4
 
-input.onchange = function () {
-  var file = input.files[0];
-
-  drawOnCanvas(file);   // see Example 6
-  //displayAsImage(file); // see Example 7
-  //uploadImgur(file);    // and analyze..
-};
-
-function upload(file) {
-  var form = new FormData(),
-      xhr = new XMLHttpRequest();
-
-  form.append('image', file);
-  xhr.open('post', 'upload', true);
-  xhr.send(form);
+input.onchange = function (e) {
+    loadImage(
+        e.target.files[0],
+        function (canvas) {
+            canvas.setAttribute('id', 'img-preview');
+            document.getElementById('main-jumbo').appendChild(canvas);
+            var btn = document.getElementById('analyze-btn');
+            if (btn) {
+                btn.removeAttribute('disabled');
+            }
+        },
+        {   // canvas conversion options
+            maxWidth: 1200,
+            maxHeight: 1200,
+            orientation: true,  // use orientation from EXIF data
+            canvas: true        // returns a canvas element instead of an img
+        }
+    );
 }
 
-function drawOnCanvas(file) {
-  var reader = new FileReader();
+function analyzeImg() {
+    var c = document.getElementById('img-preview'),
+        data = c.toDataURL("image/jpeg", 0.90),
+        b64data = data.split(',')[1];
+    uploadImgur(b64data);
+}
 
-  reader.onload = function (e) {
-    var dataURL = e.target.result,
-        c = document.querySelector('canvas'), // see Example 4
-        ctx = c.getContext('2d'),
-        img = new Image(),
-        MAX_WIDTH = 1280,
-        MAX_HEIGHT = 1280;
+function upload(file) {
+    var form = new FormData(),
+        xhr = new XMLHttpRequest();
 
-    img.onload = function() {
-      var width = img.width,
-          height = img.height;
-      // scale down
-      if (width > height){
-        if (width > MAX_WIDTH)
-          height *= MAX_WIDTH / width;
-          width = MAX_WIDTH;
-      } else {
-        if (height > MAX_HEIGHT) {
-          width *= MAX_HEIGHT / height;
-          height = MAX_HEIGHT;
-        }
-      }
-      c.width = width;
-      c.height = height;
-      ctx.drawImage(img, 0, 0, width, height);
-      var smallDataUrl = c.toDataURL("image/jpeg", 0.90);
-      uploadImgur(smallDataUrl);
-    };
-
-    img.src = dataURL;
-  };
-
-  reader.readAsDataURL(file);
+    form.append('image', file);
+    xhr.open('post', 'spot', true);
+    xhr.send(form);
 }
 
 
 function uploadImgur(file) {
 
     /* Is the file an image? */
-    if (!file) return
+    if (!file) return;
     if (file instanceof File && !file.type.match(/image.*/)) return;
-    else {
-       file = file.substring(23);
-    }
     console.log('file type is '+typeof(file));
-
+    if (file.startsWith('data:image/png;base64,')) {
+       file = file.split(',')[1];
+    }
 
     /* It is! */
     document.body.className = "uploading";
@@ -77,41 +57,62 @@ function uploadImgur(file) {
     xhr.open("POST", "https://api.imgur.com/3/image.json"); // Boooom!
     xhr.onload = function() {
     // on success
-        var data = JSON.parse(xhr.responseText).data
-        var link = data.link;
+        var data = JSON.parse(xhr.responseText).data,
+            url = data.link;
         console.log('upload successful')
         console.log(data);
-        document.querySelector("#imgur-url").href = link;
-        document.querySelector("#imgur-url").innerHTML = link;
+        document.querySelector("#imgur-url").href = url;
+        document.querySelector("#imgur-url").innerHTML = url;
         document.body.className = "uploaded";
-        analyzeImage(link);
-    }
+        analyzeImage(url);
+    };
     // Ok, I don't handle the errors. An exercice for the reader.
     xhr.setRequestHeader('Authorization', 'Client-ID bae399be44e53ae');
     /* And now, we send the formdata */
     xhr.send(fd);
 }
 
-
-function analyzeImage(url) {
+function analyzeImage(imageUrl) {
   console.log('start analysis');
   var xhr = new XMLHttpRequest();
   xhr.open("POST", "https://api.openalpr.com/v2/recognize_url");
   xhr.onload = function() {
   // on success
-     var data = JSON.parse(xhr.responseText);
-     console.log('analysis complete');
-     console.log(data);
-     if (data.results) {
-       var result = data.results[0].plate;
-       document.querySelector("#plateNumber").innerHTML = '<h1>' + result +'</h1>';
-     }
-  }
+    var data = JSON.parse(xhr.responseText);
+    console.log('analysis complete');
+    console.log(data);
+    uploadAnalysis(imageUrl, data);
+    if (data.results.length > 0) {
+        var result = data.results[0].plate;
+        document.querySelector("#plateNumber").innerHTML = '<h1>' + result +'</h1>';
+}
+   };
   var fd = new FormData();
-  fd.append('image_url', url);
+  fd.append('image_url', imageUrl);
+    // TODO: do this server side
   fd.append('secret_key', 'sk_d9f61fcd9db91602e13e76ae');
   fd.append('country', 'eu');
+  fd.append('recognize_vehicle', 1);
   xhr.send(fd);
+}
+
+function uploadAnalysis(imageUrl, data) {
+    console.log('send analysis back to plakspotr');
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "spot");
+    // TODO: make this more generic.. the request should provide the redirection url
+    xhr.onload = function() {
+        var rtext = xhr.responseText;
+        console.log(rtext);
+        var data = JSON.parse(rtext);
+        console.log('Redirecting now that analysis is ready');
+        console.log(data);
+        window.location.href = '/spots/lgf';
+    };
+    var fd = new FormData();
+    fd.append('analysis', JSON.stringify(data));
+    fd.append('url', imageUrl);
+    xhr.send(fd);
 }
 
 function displayAsImage(file) {

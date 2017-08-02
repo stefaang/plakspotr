@@ -46,7 +46,18 @@ def create_app(config_name):
     def index():
         if 'google_token' in session:
             me = google.get('userinfo')
-            return jsonify({"data": me.data})
+            # return jsonify({"data": me.data})
+            app.logger.info('User login: %s', me.data)
+            user = User.objects(email=me.data['email'])
+            if not user:
+                user = User()
+                user.load_data(me.data)
+            else:
+                user = user.first()
+            login_user(user)
+            session['username'] = user.name
+            return render_template('index.html', username=user.name)
+        # TODO: proper login page
         return redirect(url_for('.login'))
 
     @app.route('/login')
@@ -57,6 +68,7 @@ def create_app(config_name):
     @login_required
     def logout():
         session.pop('google_token', None)
+        session.pop('username', None)
         logout_user()
         return redirect(url_for('.index'))
 
@@ -70,16 +82,7 @@ def create_app(config_name):
                 request.args['error_description']
             )
         session['google_token'] = (resp['access_token'], '')
-        me = google.get('userinfo')
-        app.logger.info('User login: %s', me.data)
-        user = User.objects(email=me.data['email'])
-        if not user:
-            user = User()
-            user.load_data(me.data)
-        else:
-            user = user.first()
-        login_user(user)
-        return render_template('index.html', user=user)
+        return redirect(url_for('.index'))
 
     # add the other functions as in a blueprint
 
