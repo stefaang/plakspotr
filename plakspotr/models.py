@@ -73,8 +73,10 @@ class Spot(db.Document):
         self.plate = result.get('plate')
         vehicle = result.get('vehicle')
         if vehicle:
-            self.make = vehicle.get('make')[0]['name']
-            self.model = vehicle.get('make_model')[0]['name']
+            if vehicle.get('make')[0]['confidence'] > 0.5:
+                self.make = vehicle.get('make')[0]['name']
+                if vehicle.get('make_model')[0]['confidence'] > 0.5:
+                    self.model = vehicle.get('make_model')[0]['name']
             self.color = vehicle.get('color')[0]['name']
         return True
 

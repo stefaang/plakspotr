@@ -4,23 +4,11 @@
 {% endblock %}
 
 {% block body %}
-        <h1 class="display-4">Spot a plak</h1>
+        <h1 class="display-4">Welcome to plakspot</h1>
         <p class="lead">Car spotter pro edition.</p>
-        <p>
-            <label class="btn-file btn btn-lg btn-success" role="button">Snap Plak
-                <input type="file" class="form-control" name="image" id="img-input" accept="image/*" capture="user">
-            </label>
-        </p>
-
-        <p class="help-block">Make sure there's a car in the picture .. duh.</p>
-
-        <p><button class="btn btn-lg btn-info" disabled id="analyze-btn" onclick="analyzeImg()">Analyze</button></p>
-        <label class="btn" id="imgur-url"></label>
-        <label class="btn" id="plateNumber"></label>
+        <p class="help-block"><a href="{{ url_for('login') }}">Login with google</a></p>
 {% endblock %}
 
 {% block js_imports %}
-    <script src="{{ url_for('static',filename='js/load-image.all.min.js') }}"></script>
-    <script src="{{ url_for('static',filename='js/main.js') }}"></script>
 {% endblock %}
 

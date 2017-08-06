@@ -46,9 +46,11 @@ def create_app(config_name):
     def index():
         if 'google_token' in session:
             me = google.get('userinfo')
+            if u'error' in me.data:
+                return redirect(url_for('.logout'))
             # return jsonify({"data": me.data})
             app.logger.info('User login: %s', me.data)
-            user = User.objects(email=me.data['email'])
+            user = User.objects(email=me.data[u'email'])
             if not user:
                 user = User()
                 user.load_data(me.data)
@@ -56,9 +58,9 @@ def create_app(config_name):
                 user = user.first()
             login_user(user)
             session['username'] = user.name
-            return render_template('index.html', username=user.name)
+            return render_template('home.html', username=user.name)
         # TODO: proper login page
-        return redirect(url_for('.login'))
+        return render_template('index.html')
 
     @app.route('/login')
     def login():
