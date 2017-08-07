@@ -110,10 +110,18 @@ function uploadAnalysis(imageUrl, data) {
     xhr.onload = function() {
         var rtext = xhr.responseText;
         console.log(rtext);
-        var data = JSON.parse(rtext);
-        console.log('Redirecting now that analysis is ready');
-        console.log(data);
-        window.location.href = '/spots/lgf';
+        try {
+            var report = JSON.parse(rtext);
+            console.log(report);
+            var score = report.score,
+                prizes = report.prizes;
+            console.log("Good spot, you got " + score + " points and won these prizes: " + list)
+            console.log('Redirecting now that analysis is ready');
+            window.location.href = '/spots/' + data.results[0].plate.substring(1,4);
+        } catch (e){
+            console.log('Failed to parse report, no score / prizes for you!')
+        }
+
     };
     var fd = new FormData();
     fd.append('analysis', JSON.stringify(data));
