@@ -6,6 +6,7 @@ input.onchange = function (e) {
         function (canvas) {
             canvas.setAttribute('id', 'img-preview');
             document.getElementById('main-jumbo').appendChild(canvas);
+            // show analyse button
             var btn = document.getElementById('analyze-btn');
             if (btn) {
                 btn.removeAttribute('disabled');
@@ -18,15 +19,9 @@ input.onchange = function (e) {
             canvas: true        // returns a canvas element instead of an img
         }
     );
-}
+};
 
-function analyzeImg() {
-    var c = document.getElementById('img-preview'),
-        data = c.toDataURL("image/jpeg", 0.90),
-        b64data = data.split(',')[1];
-    uploadImgur(b64data);
-}
-
+// upload the picture to plakspot
 function upload(file) {
     var form = new FormData(),
         xhr = new XMLHttpRequest();
@@ -36,6 +31,17 @@ function upload(file) {
     xhr.send(form);
 }
 
+// analyse button starts this chain of functions:
+//    upload image to Imgur
+//    analyze car info with OpenALPR [TODO: move this to server]
+//    send analysis to plakspot
+function analyzeImg() {
+    var c = document.getElementById('img-preview'),
+        data = c.toDataURL("image/jpeg", 0.90),
+        b64data = data.split(',')[1];
+    uploadImgur(b64data);
+    document.getElementById('img-input')
+}
 
 function uploadImgur(file) {
 
@@ -64,7 +70,7 @@ function uploadImgur(file) {
         document.querySelector("#imgur-url").href = url;
         document.querySelector("#imgur-url").innerHTML = url;
         document.body.className = "uploaded";
-        analyzeImage(url);
+        analyzeOpenALPR(url);
     };
     // Ok, I don't handle the errors. An exercice for the reader.
     xhr.setRequestHeader('Authorization', 'Client-ID bae399be44e53ae');
@@ -72,7 +78,7 @@ function uploadImgur(file) {
     xhr.send(fd);
 }
 
-function analyzeImage(imageUrl) {
+function analyzeOpenALPR(imageUrl) {
   console.log('start analysis');
   var xhr = new XMLHttpRequest();
   xhr.open("POST", "https://api.openalpr.com/v2/recognize_url");

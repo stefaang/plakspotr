@@ -48,7 +48,7 @@ def create_app(config_name):
             me = google.get('userinfo')
             if u'error' in me.data:
                 return redirect(url_for('.logout'))
-            # return jsonify({"data": me.data})
+            #return jsonify({"data": me.data})
             app.logger.info('User login: %s', me.data)
             user = User.objects(email=me.data[u'email'])
             if not user:
@@ -67,7 +67,7 @@ def create_app(config_name):
         return google.authorize(callback=url_for('.authorized', _external=True))
 
     @app.route('/logout')
-    @login_required
+    #@login_required
     def logout():
         session.pop('google_token', None)
         session.pop('username', None)
