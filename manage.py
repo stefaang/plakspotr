@@ -9,16 +9,12 @@ if os.path.exists('.env'):
             k,v = line.strip().split('=', 1)
             os.environ[k.strip()] = v.strip()
 
-
-
 from plakspotr import create_app, db
 from plakspotr.models import User, Spot
 from flask_script import Manager, Shell
 
-
 app = create_app(os.getenv('PLAKSPOTR_CONFIG') or 'default')
 manager = Manager(app)
-
 
 @manager.command
 def cleandb():
