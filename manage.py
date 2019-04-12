@@ -2,10 +2,12 @@ import os
 
 if os.path.exists('.env'):
     print('Importing environment from .env...')
-    for line in open('.env'):
-        var = line.strip().split('=')
-        if len(var) == 2:
-            os.environ[var[0].strip()] = var[1].strip()
+    with open('.env') as fp:
+        for line in fp
+            if line.startswith('#'):
+                continue
+            k,v = line.strip().split('=', 1)
+            os.environ[k.strip()] = v.strip()
 
 
 
